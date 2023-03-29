@@ -30,7 +30,7 @@ If both `expression` & `user_conditions` is not provided then module will `not` 
 ### Example:
 ```hcl
 module "app_access_with_condition" {
-  source      = "../group"
+  source      = "github.com/utilitywarehouse/okta-terraform-modules//group?ref=master"
   name        = "app_access"
   description = "some description ..."
   user_conditions = [

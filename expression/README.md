@@ -16,7 +16,7 @@ While generating expression all key-value pair in a `map` will be considered as 
 ### Example:
 ```hcl
 module "group_rule" {
-  source = "../expression"
+  source = ""github.com/utilitywarehouse/okta-terraform-modules//expression?ref=master""
   user_conditions = [
     { organization = "uw", division = "Customer Services" },
     { organization = "uw", division = "IT", department = "Support" },
