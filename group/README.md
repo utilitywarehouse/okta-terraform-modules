@@ -33,6 +33,11 @@ module "app_access_with_condition" {
   source      = "github.com/utilitywarehouse/okta-terraform-modules//group?ref=master"
   name        = "app_access"
   description = "some description ..."
+  tags = [
+    "team:team_a",
+    "env:dev"
+  ]
+  
   user_conditions = [
     { organization = "uw", division = "Customer Services" },
     { organization = "uw", division = "IT", department = "Support" },
