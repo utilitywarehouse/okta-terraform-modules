@@ -13,14 +13,24 @@ While generating expression all key-value pair in a `map` will be considered as 
 
 * `expression` : The expression is the string containing generated okta expression based on `user_conditions`.
 
+### operator:
+module supports `_includes` and `_contains` operator which can be suffixed to the `key` name.
+for these suffixed keys module will use okta `Arrays` and `Strings` function instead of `==` as shown..
+
+`tags_includes = "contractor"` will be converted to `Arrays.contains(user.tags, "contractor")`
+
+`teams_contains = "infra"` will be converted to `String.stringContains(user.teams, "infra")`
+
 ### Example:
 ```hcl
 module "group_rule" {
-  source = ""github.com/utilitywarehouse/okta-terraform-modules//expression?ref=master""
+  source = "github.com/utilitywarehouse/okta-terraform-modules//expression?ref=master"
   user_conditions = [
     { organization = "uw", division = "Customer Services" },
     { organization = "uw", division = "IT", department = "Support" },
-    { roleID = 2, isManager = true },
+    { roleID = 2, isManager = true, isTemp = false },
+    { tags_includes = "devs" },
+    { teams_contains = "infra" },
   ]
 }
 
@@ -29,9 +39,11 @@ output "group_rule" {
 }
 
 # Outputs:
-#  group_rule = <<-EOT
-#       (user.organization == "uw" && user.division == "Customer Services") ||
-#       (user.organization == "uw" && user.division == "IT" && user.department == "Support") ||
-#       (user.roleID == "2" && user.isManager == true)
-#  EOT
+# group_rule = <<EOT
+# (user.organization == "uw" && user.division == "Customer Services") ||
+# (user.organization == "uw" && user.division == "IT" && user.department == "Support") ||
+# (user.roleID == "2" && !user.isTemp && user.isManager) ||
+# (Arrays.contains(user.tags, "devs")) ||
+# (String.stringContains(user.teams, "infra"))
+# EOT
 ```
