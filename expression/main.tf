@@ -15,19 +15,19 @@ locals {
 %{if condition[k] == "true"}
   user.${k}
 %{else}
-%{if condition[k] == "false"}
-  !user.${k}
-%{else}
-%{if length(regexall("_includes", "${k}")) > 0}
-  Arrays.contains(user.${trimsuffix(k, "_includes")}, "${condition[k]}")
-%{else}
-%{if length(regexall("_contains", "${k}")) > 0}
-  String.stringContains(user.${trimsuffix(k, "_contains")}, "${condition[k]}")
-%{else}
-  ${format("user.%s == \"%s\"", k, "${condition[k]}")}
-%{endif}
-%{endif}
-%{endif}
+  %{if condition[k] == "false"}
+    !user.${k}
+  %{else}
+    %{if length(regexall("_includes", "${k}")) > 0}
+      Arrays.contains(user.${trimsuffix(k, "_includes")}, "${condition[k]}")
+    %{else}
+      %{if length(regexall("_contains", "${k}")) > 0}
+        String.stringContains(user.${trimsuffix(k, "_contains")}, "${condition[k]}")
+      %{else}
+        ${format("user.%s == \"%s\"", k, "${condition[k]}")}
+      %{endif}
+    %{endif}
+  %{endif}
 %{endif}
 EOT
       )
