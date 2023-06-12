@@ -41,7 +41,9 @@ module "app_access_with_condition" {
   user_conditions = [
     { organization = "uw", division = "Customer Services" },
     { organization = "uw", division = "IT", department = "Support" },
-    { roleID = 2, isManager = true },
+    { roleID = 2, isManager = true, isTemp = false },
+    { tags_includes = "devs" },
+    { teams_contains = "infra" },
   ]
 }
 ```
@@ -63,7 +65,9 @@ creates following...
     + expression_value  = <<-EOT
           (user.organization == "uw" && user.division == "Customer Services") ||
           (user.organization == "uw" && user.division == "IT" && user.department == "Support") ||
-          (user.roleID == "2" && user.isManager == true)
+          (user.roleID == "2" && !user.isTemp && user.isManager) ||
+          (Arrays.contains(user.tags, "devs")) ||
+          (String.stringContains(user.teams, "infra"))
       EOT
     + group_assignments = (known after apply)
     + id                = (known after apply)
