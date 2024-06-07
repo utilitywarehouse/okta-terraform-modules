@@ -17,7 +17,9 @@ variable `expression` can be used to provide okta group rule expression string
 
 * `expression`: The okta expression string.
 
-* `user_conditions` : array of the conditions. each condition is represented as map with attribute name as key and attribute value as map value. Each key in the `condition map` must be a valid user attribute. eg `[{ att1 = "v1", att2 = "v2"}, {att1 = "v3"}]`.
+* `user_conditions` : array of the conditions. each condition is represented as map with attribute 
+  name as key and attribute value as map value. Each key in the `condition map` must be a valid user attribute.
+  eg `[[{ common_att = "v" }], [{ att1 = "v1", att2 = "v2"}, {att1 = "v3"}]]`.
 
 If both `expression` & `user_conditions` is not provided then module will `not` create corresponding rule. 
 
@@ -39,11 +41,14 @@ module "app_access_with_condition" {
   ]
   
   user_conditions = [
-    { organization = "uw", division = "Customer Services" },
-    { organization = "uw", division = "IT", department = "Support" },
-    { roleID = 2, isManager = true, isTemp = false },
-    { tags_includes = "devs" },
-    { teams_contains = "infra" },
+    [{ organization = "uw" }],
+    [
+      { division = "Customer Services" },
+      { division = "IT", department = "Support" },
+      { roleID = 2, isManager = true, isTemp = false },
+      { tags_includes = "devs" },
+      { teams_contains = "infra" },
+    ]
   ]
 }
 ```
@@ -63,11 +68,17 @@ creates following...
 + resource "okta_group_rule" "group_rule" {
     + expression_type   = "urn:okta:expression:1.0"
     + expression_value  = <<-EOT
-          (user.organization == "uw" && user.division == "Customer Services") ||
-          (user.organization == "uw" && user.division == "IT" && user.department == "Support") ||
-          (user.roleID == "2" && !user.isTemp && user.isManager) ||
-          (Arrays.contains(user.tags, "devs")) ||
-          (String.stringContains(user.teams, "infra"))
+         (
+         (user.organization == "uw")
+         )
+         &&
+         (
+         (user.division == "Customer Services") ||
+         (user.division == "IT" && user.department == "Support") ||
+         (user.roleID == "2" && !user.isTemp && user.isManager) ||
+         (Arrays.contains(user.tags, "devs")) ||
+         (String.stringContains(user.teams, "infra"))
+         )
       EOT
     + group_assignments = (known after apply)
     + id                = (known after apply)
@@ -78,7 +89,19 @@ creates following...
 
 
 ### Import
-```bash
-terraform import module.example.okta_group.group <group_id>
-terraform import 'module.example.okta_group_rule.rule[0]' <rule_id>
-```
+* command line
+  ```bash
+  terraform import module.example.okta_group.group <group_id>
+  terraform import 'module.example.okta_group_rule.rule[0]' <rule_id>
+  ```
+* import block
+  ```
+  import {
+    to = module.example.okta_group.group
+    id = <group_id>
+  }
+  import {
+    to = module.example.okta_group_rule.rule[0]
+    id = <rule_id>
+  }
+  ```

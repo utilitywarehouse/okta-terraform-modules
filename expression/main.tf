@@ -1,17 +1,24 @@
 locals {
   # input
   # user_conditions = [
-  # { AK1 = "AV1", AK2 = 2 },
-  # { BK1 = "BV1", BK2 = false },
-  # { CK1_includes = "CV1", CK2 = true },
-  # { DK1_contains = "DV1" }
+  #   [
+  #     { AllAK1 = "allAV1", AllAK2 = 3 },
+  #     { AllBK1 = "allBV1", AllBK2 = true },
+  #   ],
+  #   [
+  #     { AK1 = "AV1", AK2 = 2 },
+  #     { BK1 = "BV1", BK2 = false },
+  #     { CK1_includes = "CV1", CK2 = true },
+  #     { DK1_contains = "DV1" }
+  #   ]
   # ]
 
-  attributeStrs = [
-    for condition in var.user_conditions : [
-      # reverse key to get attributes in order of organisation,division,department
-      for k in reverse(keys(condition)) :
-      trimspace(<<EOT
+  attributeStrsGroups = [
+    for conditions in var.user_conditions : [
+      for condition in conditions : [
+        # reverse key to get attributes in order of organisation,division,department
+        for k in reverse(keys(condition)) :
+        trimspace(<<EOT
 %{if condition[k] == "true"}
   user.${k}
 %{else}
@@ -30,43 +37,92 @@ locals {
   %{endif}
 %{endif}
 EOT
-      )
+        )
+      ]
     ]
   ]
-  # attributeStrs = [
+  # attributeStrsGroups = [
+  # group_rule = [
   #   [
-  #     "user.AK2 == \"2\"",
-  #     "user.AK1 == \"AV1\"",
+  #     [
+  #       "user.AllAK2 == \"3\"",
+  #       "user.AllAK1 == \"allAV1\"",
+  #     ],
+  #     [
+  #       "user.AllBK2",
+  #       "user.AllBK1 == \"allBV1\"",
+  #     ],
   #   ],
   #   [
-  #     "!user.BK2",
-  #     "user.BK1 == \"BV1\"",
-  #   ],
-  #   [
-  #     "user.CK2",
-  #     "Arrays.contains(user.CK1, \"CV1\")",
-  #   ],
-  #   [
-  #     "String.stringContains(user.DK1, \"DV1\")",
+  #     [
+  #       "user.AK2 == \"2\"",
+  #       "user.AK1 == \"AV1\"",
+  #     ],
+  #     [
+  #       "!user.BK2",
+  #       "user.BK1 == \"BV1\"",
+  #     ],
+  #     [
+  #       "user.CK2",
+  #       "Arrays.contains(user.CK1, \"CV1\")",
+  #     ],
+  #     [
+  #       "String.stringContains(user.DK1, \"DV1\")",
+  #     ],
   #   ],
   # ]
 
-  paths = [
-    for attrs in local.attributeStrs :
-    format("(%s)", join(" && ", attrs))
+
+  pathsGroups = [
+    for attributeStrs in local.attributeStrsGroups : [
+      for attrs in attributeStrs :
+      format("(%s)", join(" && ", attrs))
+    ]
   ]
-  # paths = [
-  #   "(user.AK2 == \"2\" && user.AK1 == \"AV1\")",
-  #   "(!user.BK2 && user.BK1 == \"BV1\")",
-  #   "(user.CK2 && Arrays.contains(user.CK1, \"CV1\"))",
-  #   "(String.stringContains(user.DK1, \"DV1\"))",
+  # pathsGroups = [
+  #   [
+  #     "(user.AllAK2 == \"3\" && user.AllAK1 == \"allAV1\")",
+  #     "(user.AllBK2 && user.AllBK1 == \"allBV1\")",
+  #   ],
+  #   [
+  #     "(user.AK2 == \"2\" && user.AK1 == \"AV1\")",
+  #     "(!user.BK2 && user.BK1 == \"BV1\")",
+  #     "(user.CK2 && Arrays.contains(user.CK1, \"CV1\"))",
+  #     "(String.stringContains(user.DK1, \"DV1\"))",
+  #   ],
   # ]
 
-  expression = join(" ||\n", local.paths)
-  # expression = <<EOT
-  #  (user.AK2 == "2" && user.AK1 == "AV1") ||
-  #  (!user.BK2 && user.BK1 == "BV1") ||
-  #  (user.CK2 && Arrays.contains(user.CK1, "CV1")) ||
-  #  (String.stringContains(user.DK1, "DV1"))
+  expressionGroups = [
+    for paths in local.pathsGroups :
+    join(" ||\n", paths)
+  ]
+
+  # expressionGroups = [
+  #   <<-EOT
+  #     (user.AllAK2 == "3" && user.AllAK1 == "allAV1") ||
+  #     (user.AllBK2 && user.AllBK1 == "allBV1")
+  #   EOT,
+  #   <<-EOT
+  #     (user.AK2 == "2" && user.AK1 == "AV1") ||
+  #     (!user.BK2 && user.BK1 == "BV1") ||
+  #     (user.CK2 && Arrays.contains(user.CK1, "CV1")) ||
+  #     (String.stringContains(user.DK1, "DV1"))
+  #   EOT,
+  # ]
+
+
+  expression = format("(\n%s\n)", join("\n)\n&&\n(\n", local.expressionGroups))
+  # expression = <<-EOT
+  #     (
+  #     (user.AllAK2 == "3" && user.AllAK1 == "allAV1") ||
+  #     (user.AllBK2 && user.AllBK1 == "allBV1")
+  #     )
+  #     &&
+  #     (
+  #     (user.AK2 == "2" && user.AK1 == "AV1") ||
+  #     (!user.BK2 && user.BK1 == "BV1") ||
+  #     (user.CK2 && Arrays.contains(user.CK1, "CV1")) ||
+  #     (String.stringContains(user.DK1, "DV1"))
+  #     )
   # EOT
 }

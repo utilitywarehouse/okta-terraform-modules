@@ -27,8 +27,13 @@ module "app_access_with_condition" {
   name        = "app_access"
   description = "some description ..."
   user_conditions = [
-    { organization = "uw", division = "Customer Services" },
-    { organization = "uw", division = "IT", department = "Support" },
+    [
+      { organization = "uw" }
+    ],
+    [
+      { division = "Customer Services" },
+      { division = "IT", department = "Support" },
+    ]
   ]
 }
 
