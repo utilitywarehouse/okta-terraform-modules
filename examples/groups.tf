@@ -6,8 +6,10 @@ terraform {
   }
 }
 
+variable "org_name" {}
+
 provider "okta" {
-  org_name = "preview"
+  org_name = var.org_name
   base_url = "oktapreview.com"
 }
 
