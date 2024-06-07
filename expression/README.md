@@ -1,13 +1,19 @@
 # expression
 
-`expression` module will generate okta rule expression based on given array of user conditions(`list(map(string))`).
+`expression` module will generate okta rule expression based on given array of 
+group of user conditions(`list(list(map(string)))`).
 
 
-While generating expression all key-value pair in a `map` will be considered as required (joined using `&&`) and generated map `expression` in a `list` will be joined using OR(||) operator.
+While generating expression all key-value pair in a `map` will be considered as 
+required (joined using `&&`) and generated map `expression` in a `group` will be
+joined using OR(||) operator. groups are then joined using `&&` operator.
 
 
 ### Required inputs:
-* `user_conditions` : The array of the conditions. each condition is represented as map with attribute name as key and attribute value as map value. Each key in the `condition map` must be a valid user attribute. eg `[{ att1 = "v1", att2 = "v2"}, {att1 = "v3"}]`.
+* `user_conditions` : The array of the conditions. each condition is represented 
+  as map with attribute name as key and attribute value as map value. 
+  Each key in the `condition map` must be a valid user attribute. 
+  eg `[[{ common_att = "v" }],[{ att1 = "v1", att2 = "v2"}, {att1 = "v3"}]]`.
 
 ### Outputs:
 
@@ -26,11 +32,16 @@ for these suffixed keys module will use okta `Arrays` and `Strings` function ins
 module "group_rule" {
   source = "github.com/utilitywarehouse/okta-terraform-modules//expression?ref=master"
   user_conditions = [
-    { organization = "uw", division = "Customer Services" },
-    { organization = "uw", division = "IT", department = "Support" },
-    { roleID = 2, isManager = true, isTemp = false },
-    { tags_includes = "devs" },
-    { teams_contains = "infra" },
+    [
+      { organization = "uw" }
+    ],
+    [
+      { division = "Customer Services" },
+      { division = "IT", department = "Support" },
+      { roleID = 2, isManager = true, isTemp = false },
+      { tags_includes = "devs" },
+      { teams_contains = "infra" },
+    ]
   ]
 }
 
@@ -39,11 +50,17 @@ output "group_rule" {
 }
 
 # Outputs:
-# group_rule = <<EOT
-# (user.organization == "uw" && user.division == "Customer Services") ||
-# (user.organization == "uw" && user.division == "IT" && user.department == "Support") ||
-# (user.roleID == "2" && !user.isTemp && user.isManager) ||
-# (Arrays.contains(user.tags, "devs")) ||
-# (String.stringContains(user.teams, "infra"))
+# group_rule = <<-EOT
+#     (
+#     (user.organization == "uw")
+#     )
+#     &&
+#     (
+#     (user.division == "Customer Services") ||
+#     (user.division == "IT" && user.department == "Support") ||
+#     (user.roleID == "2" && !user.isTemp && user.isManager) ||
+#     (Arrays.contains(user.tags, "devs")) ||
+#     (String.stringContains(user.teams, "infra"))
+#     )
 # EOT
 ```

@@ -19,7 +19,7 @@ variable "tags" {
 }
 
 variable "user_conditions" {
-  type     = list(map(string))
+  type     = list(list(map(string)))
   default  = null
   nullable = true
 }
