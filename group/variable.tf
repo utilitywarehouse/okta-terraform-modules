@@ -23,3 +23,9 @@ variable "user_conditions" {
   default  = null
   nullable = true
 }
+
+variable "app_ids" {
+  type        = list(string)
+  description = "Apps to associate group with"
+  default     = []
+}

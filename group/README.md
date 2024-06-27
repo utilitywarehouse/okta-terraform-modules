@@ -21,8 +21,11 @@ variable `expression` can be used to provide okta group rule expression string
   name as key and attribute value as map value. Each key in the `condition map` must be a valid user attribute.
   eg `[[{ common_att = "v" }], [{ att1 = "v1", att2 = "v2"}, {att1 = "v3"}]]`.
 
-If both `expression` & `user_conditions` is not provided then module will `not` create corresponding rule. 
+  If both `expression` & `user_conditions` is not provided then module will `not` create corresponding rule. 
 
+* `app_ids`: applications ids to associate group with. modules creates `okta_app_group_assignment`
+  resource for each application.
+  
 ### Outputs:
 
 * `group_id` : The ID of the Okta Group.
@@ -93,6 +96,7 @@ creates following...
   ```bash
   terraform import module.example.okta_group.group <group_id>
   terraform import 'module.example.okta_group_rule.rule[0]' <rule_id>
+  terraform import 'module.example.okta_app_group_assignment.assignment["<app_id>"]' <app_id>/<group_id>
   ```
 * import block
   ```
@@ -103,5 +107,9 @@ creates following...
   import {
     to = module.example.okta_group_rule.rule[0]
     id = <rule_id>
+  }
+  import {
+    to = module.example.okta_app_group_assignment.assignment["<app_id>"]
+    id = <app_id>/<group_id>
   }
   ```
