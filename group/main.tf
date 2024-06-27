@@ -35,3 +35,10 @@ resource "okta_group_rule" "rule" {
     ignore_changes = [users_excluded]
   }
 }
+
+resource "okta_app_group_assignment" "assignment" {
+  for_each = toset(var.app_ids)
+
+  app_id   = each.value
+  group_id = okta_group.group.id
+}
