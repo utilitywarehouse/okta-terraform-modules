@@ -25,7 +25,7 @@ variable "user_conditions" {
 }
 
 variable "app_ids" {
-  type        = list(string)
+  type        = map(string)
   description = "Apps to associate group with"
-  default     = []
+  default     = {}
 }

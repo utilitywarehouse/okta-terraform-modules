@@ -37,7 +37,7 @@ resource "okta_group_rule" "rule" {
 }
 
 resource "okta_app_group_assignment" "assignment" {
-  for_each = toset(var.app_ids)
+  for_each = var.app_ids
 
   app_id   = each.value
   group_id = okta_group.group.id

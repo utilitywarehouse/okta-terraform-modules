@@ -42,6 +42,11 @@ module "app_access_with_condition" {
     "team:team_a",
     "env:dev"
   ]
+
+  app_ids = {
+    "app_0" : okta_app_oauth.example1.id,
+    "app_1" : okta_app_oauth.example2.id,
+  }
   
   user_conditions = [
     [{ organization = "uw" }],
@@ -88,6 +93,22 @@ creates following...
     + name              = "app_access"
     + status            = "ACTIVE"
   }
+
+# module.app_access_with_condition.okta_app_group_assignment.assignment["app_0"] will be created
++ resource "okta_app_group_assignment" "assignment" {
+    + app_id            = (known after apply)
+    + group_id          = (known after apply)
+    + id                = (known after apply)
+    + retain_assignment = false
+  }
+
+# module.app_access_with_condition.okta_app_group_assignment.assignment["app_1"] will be created
++ resource "okta_app_group_assignment" "assignment" {
+    + app_id            = (known after apply)
+    + group_id          = (known after apply)
+    + id                = (known after apply)
+    + retain_assignment = false
+  }
 ```
 
 
@@ -109,7 +130,7 @@ creates following...
     id = <rule_id>
   }
   import {
-    to = module.example.okta_app_group_assignment.assignment["<app_id>"]
+    to = module.example.okta_app_group_assignment.assignment["<key>"]
     id = <app_id>/<group_id>
   }
   ```
