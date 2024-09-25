@@ -13,7 +13,8 @@ variable `expression` can be used to provide okta group rule expression string
 * `description` : The description of the Okta Group.
 
 ### Optional inputs:
-* `rule_name`: The name of the Group Rule. if not provided group `name` will be used for rule name.
+* `rule_name`: The name of the Group Rule. if not provided group `id` will be used for rule name.
+  group `id` is used since okta has 50 char limit on group name.
 
 * `expression`: The okta expression string.
 
