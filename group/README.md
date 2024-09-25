@@ -90,7 +90,7 @@ creates following...
       EOT
     + group_assignments = (known after apply)
     + id                = (known after apply)
-    + name              = "app_access"
+    + name              = (known after apply)
     + status            = "ACTIVE"
   }
 
