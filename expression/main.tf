@@ -9,7 +9,8 @@ locals {
   #     { AK1 = "AV1", AK2 = 2 },
   #     { BK1 = "BV1", BK2 = false },
   #     { CK1_includes = "CV1", CK2 = true },
-  #     { DK1_contains = "DV1" }
+  #     { DK1_contains = "DV1" },
+  #     { EK1_starts_with = "EV1" }
   #   ]
   # ]
 
@@ -31,7 +32,11 @@ locals {
       %{if length(regexall("_contains", "${k}")) > 0}
         String.stringContains(user.${trimsuffix(k, "_contains")}, "${condition[k]}")
       %{else}
-        ${format("user.%s == \"%s\"", k, "${condition[k]}")}
+        %{if length(regexall("_starts_with", "${k}")) > 0}
+          String.startsWith(user.${trimsuffix(k, "_starts_with")}, "${condition[k]}")
+        %{else}
+          ${format("user.%s == \"%s\"", k, "${condition[k]}")}
+        %{endif}
       %{endif}
     %{endif}
   %{endif}

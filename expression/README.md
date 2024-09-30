@@ -20,12 +20,14 @@ joined using OR(||) operator. groups are then joined using `&&` operator.
 * `expression` : The expression is the string containing generated okta expression based on `user_conditions`.
 
 ### operator:
-module supports `_includes` and `_contains` operator which can be suffixed to the `key` name.
+module supports `_includes`, `_contains` and `_starts_with` operator which can be suffixed to the `key` name.
 for these suffixed keys module will use okta `Arrays` and `Strings` function instead of `==` as shown..
 
 `tags_includes = "contractor"` will be converted to `Arrays.contains(user.tags, "contractor")`
 
 `teams_contains = "infra"` will be converted to `String.stringContains(user.teams, "infra")`
+
+`teams_starts_with = "Technology/Security"` will be converted to `String.startsWith(user.teams, "Technology/Security")`
 
 ### Example:
 ```hcl
@@ -41,6 +43,7 @@ module "group_rule" {
       { roleID = 2, isManager = true, isTemp = false },
       { tags_includes = "devs" },
       { teams_contains = "infra" },
+      { teams_starts_with = "Technology/Security" },
     ]
   ]
 }
