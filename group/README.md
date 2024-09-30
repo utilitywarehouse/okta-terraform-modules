@@ -56,6 +56,7 @@ module "app_access_with_condition" {
       { roleID = 2, isManager = true, isTemp = false },
       { tags_includes = "devs" },
       { teams_contains = "infra" },
+      { teams_starts_with = "Technology/Security" },
     ]
   ]
 }
