@@ -25,7 +25,7 @@ resource "okta_group_rule" "rule" {
   count = var.user_conditions == null && var.expression == "" ? 0 : 1
 
 
-  name              = var.rule_name != "" ? var.rule_name : var.name
+  name              = var.rule_name != "" ? var.rule_name : okta_group.group.id
   status            = "ACTIVE"
   group_assignments = [okta_group.group.id]
   expression_type   = "urn:okta:expression:1.0"
