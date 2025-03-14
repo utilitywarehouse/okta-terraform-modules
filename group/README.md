@@ -2,7 +2,7 @@
 
 this module create both group and corresponding group rule resource if required based on given `user_conditions`
 
-use variable `user_conditions` to provide conditions in the form of [attribute lists](../expression/readme.md)
+use variable `user_conditions` to provide conditions in the form of [attribute lists](../expression/README.md)
 variable `expression` can be used to provide okta group rule expression string
 
 
