@@ -119,7 +119,7 @@ creates following...
   ```bash
   terraform import module.example.okta_group.group <group_id>
   terraform import 'module.example.okta_group_rule.rule[0]' <rule_id>
-  terraform import 'module.example.okta_app_group_assignment.assignment["<app_id>"]' <app_id>/<group_id>
+  terraform import 'module.example.okta_app_group_assignment.assignment["<key>"]' <app_id>/<group_id>
   ```
 * import block
   ```
