@@ -8,7 +8,7 @@ module "group_rule" {
       { division = "Customer Services" },
       { division = "IT", department = "Support" },
       { roleID = 2, isManager = true, isTemp = false },
-      { tags_includes = "devs" },
+      { tags_includes = "devs,product" },
       { teams_contains = "infra" },
       { teams_starts_with = "Technology/Security" }
     ]
@@ -29,7 +29,8 @@ output "group_rule" {
 #   (user.division == "Customer Services") ||
 #   (user.division == "IT" && user.department == "Support") ||
 #   (user.roleID == "2" && !user.isTemp && user.isManager) ||
-#   (Arrays.contains(user.tags, "devs")) ||
-#   (String.stringContains(user.teams, "infra"))
+#   (Arrays.contains(user.tags, "devs") && Arrays.contains(user.tags, "product")) ||
+#   (String.stringContains(user.teams, "infra")) ||
+#   (String.startsWith(user.teams, "Technology/Security"))
 #   )
 # EOT

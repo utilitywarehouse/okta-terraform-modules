@@ -8,7 +8,7 @@ locals {
   #   [
   #     { AK1 = "AV1", AK2 = 2 },
   #     { BK1 = "BV1", BK2 = false },
-  #     { CK1_includes = "CV1", CK2 = true },
+  #     { CK1_includes = "CV1,CV2", CK2 = true },
   #     { DK1_contains = "DV1" },
   #     { EK1_starts_with = "EV1" }
   #   ]
@@ -16,38 +16,39 @@ locals {
 
   attributeStrsGroups = [
     for conditions in var.user_conditions : [
-      for condition in conditions : [
-        # reverse key to get attributes in order of organisation,division,department
-        for k in reverse(keys(condition)) :
-        trimspace(<<EOT
-%{if condition[k] == "true"}
-  user.${k}
-%{else}
-  %{if condition[k] == "false"}
-    !user.${k}
-  %{else}
-    %{if length(regexall("_includes", "${k}")) > 0}
-      Arrays.contains(user.${trimsuffix(k, "_includes")}, "${condition[k]}")
-    %{else}
-      %{if length(regexall("_contains", "${k}")) > 0}
-        String.stringContains(user.${trimsuffix(k, "_contains")}, "${condition[k]}")
-      %{else}
-        %{if length(regexall("_starts_with", "${k}")) > 0}
-          String.startsWith(user.${trimsuffix(k, "_starts_with")}, "${condition[k]}")
-        %{else}
-          ${format("user.%s == \"%s\"", k, "${condition[k]}")}
-        %{endif}
-      %{endif}
-    %{endif}
-  %{endif}
-%{endif}
-EOT
+      for condition in conditions : flatten([
+        # This inner loop now correctly returns a list of lists of strings,
+        # which is what the flatten function is designed to handle.
+        for k in reverse(keys(condition)) : (
+          strcontains(k, "_includes") ? [
+            for item in split(",", condition[k]) :
+            format("Arrays.contains(user.%s, \"%s\")", trimsuffix(k, "_includes"), trimspace(item))
+          ] :
+
+          strcontains(k, "_contains") ? [
+            format("String.stringContains(user.%s, \"%s\")", trimsuffix(k, "_contains"), condition[k])
+          ] :
+
+          strcontains(k, "_starts_with") ? [
+            format("String.startsWith(user.%s, \"%s\")", trimsuffix(k, "_starts_with"), condition[k])
+          ] :
+
+          condition[k] == "true" ? [
+            format("user.%s", k)
+          ] :
+
+          condition[k] == "false" ? [
+            format("!user.%s", k)
+          ] :
+
+          [
+            format("user.%s == \"%s\"", k, condition[k])
+          ]
         )
-      ]
+      ])
     ]
   ]
   # attributeStrsGroups = [
-  # group_rule = [
   #   [
   #     [
   #       "user.AllAK2 == \"3\"",
@@ -70,9 +71,13 @@ EOT
   #     [
   #       "user.CK2",
   #       "Arrays.contains(user.CK1, \"CV1\")",
+  #       "Arrays.contains(user.CK1, \"CV2\")",
   #     ],
   #     [
   #       "String.stringContains(user.DK1, \"DV1\")",
+  #     ],
+  #     [
+  #       "String.startsWith(user.EK1, \"EV1\")",
   #     ],
   #   ],
   # ]
@@ -92,8 +97,9 @@ EOT
   #   [
   #     "(user.AK2 == \"2\" && user.AK1 == \"AV1\")",
   #     "(!user.BK2 && user.BK1 == \"BV1\")",
-  #     "(user.CK2 && Arrays.contains(user.CK1, \"CV1\"))",
+  #     "(user.CK2 && Arrays.contains(user.CK1, \"CV1\") && Arrays.contains(user.CK1, \"CV2\"))",
   #     "(String.stringContains(user.DK1, \"DV1\"))",
+  #     "(String.startsWith(user.EK1, \"EV1\"))",
   #   ],
   # ]
 
@@ -110,8 +116,9 @@ EOT
   #   <<-EOT
   #     (user.AK2 == "2" && user.AK1 == "AV1") ||
   #     (!user.BK2 && user.BK1 == "BV1") ||
-  #     (user.CK2 && Arrays.contains(user.CK1, "CV1")) ||
-  #     (String.stringContains(user.DK1, "DV1"))
+  #     (user.CK2 && Arrays.contains(user.CK1, "CV1") && Arrays.contains(user.CK1, "CV2")) ||
+  #     (String.stringContains(user.DK1, "DV1")) ||
+  #     (String.startsWith(user.EK1, "EV1"))
   #   EOT,
   # ]
 
@@ -126,8 +133,9 @@ EOT
   #     (
   #     (user.AK2 == "2" && user.AK1 == "AV1") ||
   #     (!user.BK2 && user.BK1 == "BV1") ||
-  #     (user.CK2 && Arrays.contains(user.CK1, "CV1")) ||
-  #     (String.stringContains(user.DK1, "DV1"))
+  #     (user.CK2 && Arrays.contains(user.CK1, "CV1") && Arrays.contains(user.CK1, "CV2")) ||
+  #     (String.stringContains(user.DK1, "DV1")) ||
+  #     (String.startsWith(user.EK1, "EV1"))
   #     )
   # EOT
 }
