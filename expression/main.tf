@@ -14,11 +14,11 @@ locals {
   #   ]
   # ]
 
+  # Step 1: Generate the individual string components for each attribute.
+  # This is step converts each key-value pair into its expression format.
   attributeStrsGroups = [
     for conditions in var.user_conditions : [
       for condition in conditions : flatten([
-        # This inner loop now correctly returns a list of lists of strings,
-        # which is what the flatten function is designed to handle.
         for k in reverse(keys(condition)) : (
           strcontains(k, "_includes") ? [
             for item in split(",", condition[k]) :
@@ -82,7 +82,7 @@ locals {
   #   ],
   # ]
 
-
+  # Step 2: Join the attribute strings for each condition with "&&".
   pathsGroups = [
     for attributeStrs in local.attributeStrsGroups : [
       for attrs in attributeStrs :
@@ -103,6 +103,7 @@ locals {
   #   ],
   # ]
 
+  # Step 3: Join the condition strings for each group with "||".
   expressionGroups = [
     for paths in local.pathsGroups :
     join(" ||\n", paths)
@@ -122,7 +123,7 @@ locals {
   #   EOT,
   # ]
 
-
+  # Step 4: Join the final group strings with "&&" and wrap them.
   expression = format("(\n%s\n)", join("\n)\n&&\n(\n", local.expressionGroups))
   # expression = <<-EOT
   #     (
